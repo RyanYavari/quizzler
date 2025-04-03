@@ -3,7 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "skipLibCheck": true,
     "baseUrl": "./src",  // Ensures imports are resolved from "src/"
     "paths": {
