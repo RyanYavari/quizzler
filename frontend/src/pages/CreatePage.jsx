@@ -1,16 +1,27 @@
 import { useColorModeValue } from '@/components/ui/color-mode'
 import { Box, Button, Container, Heading, Input, VStack } from '@chakra-ui/react'
 import React, { useState } from 'react'
+import {useProductStore} from '../store/product' // Adjust the import path as necessary
+
+
+
 
 const CreatePage = () => {
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     image: '',
-  })
+  });
 
-  const handleAddProduct = () => {
-    console.log(newProduct)
+
+  const {createProduct} = useProductStore()
+
+  const handleAddProduct = async() => {
+    const {success, message} = await createProduct(newProduct)
+    console.log("Success:", success)
+    console.log("Message:", message)
+    
+    setNewProduct({name: "", price: "", image: ""}); 
   }
 
 
@@ -22,8 +33,7 @@ const CreatePage = () => {
           Create New Product
         </Heading>
 
-        <Box
-          w={"full"} bg={useColorModeValue('white', 'gray.800')} p={6} rounded={'lg'} shadow={'md'}>
+        <Box w={"full"} bg={useColorModeValue('white', 'gray.800')} p={6} rounded={'lg'} shadow={'md'}>
           <VStack spacing={4}>
             <Input
               placeholder='Product Name'

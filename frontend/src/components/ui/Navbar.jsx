@@ -5,10 +5,13 @@ import { FaPlusSquare } from 'react-icons/fa';
 import { IoMoon } from 'react-icons/io5';
 import { LuSun } from 'react-icons/lu';
 import { useColorMode } from './color-mode'; // Adjust the import path as necessary  
+ // Adjust the import path as necessary
+
 
 const Navbar = () => {
 
   const { colorMode, toggleColorMode } = useColorMode();
+
   return (
     <div>
       <Container maxW={"1140px"} px={4} >
