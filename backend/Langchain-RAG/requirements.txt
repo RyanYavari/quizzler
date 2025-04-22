@@ -1,0 +1,26 @@
+# Core LangChain & Embeddings
+langchain==0.3.23
+langchain-openai==0.3.14
+langchain-chroma==0.2.3
+langchain-community==0.3.21
+langchain-core==0.3.55
+langchain-text-splitters==0.3.8
+
+# Vector DB and Document Parsing
+chromadb==0.5.0
+unstructured==0.14.4        # for loading and parsing markdown/doc files
+
+# OpenAI API and Tokenizer
+openai==1.75.0
+tiktoken==0.7.0
+
+# Utility
+python-dotenv==1.0.1         # for .env file loading
+
+# (Optional) PDF and markdown parsing dependencies
+pdfminer.six>=20221105       # if you want to expand to PDFs
+pymupdf>=1.22.0              # optional for .pdf files via unstructured
+
+# Comment for users
+# If you're using markdown parsing: `pip install "unstructured[md]"`
+# For Windows users, install Microsoft Visual C++ Build Tools if issues with chromadb/onnxruntime
