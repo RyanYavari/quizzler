@@ -1,14 +1,11 @@
-# from langchain.document_loaders import DirectoryLoader
+from langchain_community.vectorstores import Chroma
 from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-# from langchain.embeddings import OpenAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
-import openai 
+import openai
 from dotenv import load_dotenv
 import os
-import shutil
 
 
 load_dotenv()
@@ -30,15 +27,26 @@ def main():
 
 
 def generate_data_store():
+    print("📚 Loading documents...")
     documents = load_documents()
+    print(f"✅ Loaded {len(documents)} document(s).")
+
+    print("🧠 Splitting text...")
     chunks = split_text(documents)
+    print(f"✅ Got {len(chunks)} chunks.")
+
+    print("💾 Saving to Chroma...")
     save_to_chroma(chunks)
+    print("✅ Chroma DB updated.")
+
 
 
 def load_documents():
-    loader = DirectoryLoader(DATA_PATH, glob="*.md")
-    documents = loader.load()
+    loader = DirectoryLoader(DATA_PATH, glob="*.md", recursive=False)
+    pdf_loader = DirectoryLoader(DATA_PATH, glob="*.pdf", recursive=False)
+    documents = loader.load() + pdf_loader.load()
     return documents
+
 
 
 def split_text(documents: list[Document]):
@@ -51,26 +59,30 @@ def split_text(documents: list[Document]):
     chunks = text_splitter.split_documents(documents)
     print(f"Split {len(documents)} documents into {len(chunks)} chunks.")
 
-    document = chunks[50]
-    print(document.page_content)
-    print(document.metadata)
+    if chunks:
+        sample = chunks[min(50, len(chunks) - 1)]
+        print(sample.page_content)
+        print(sample.metadata)
+    else:
+        print("⚠️ No chunks were created.")
 
     return chunks
 
 
 def save_to_chroma(chunks: list[Document]):
-    # Clear out the database first.
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
+    print("💾 Saving to Chroma...")
 
-    # Create a new DB from the documents.
+    # This will save to disk
     db = Chroma.from_documents(
-        chunks,
-        OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY")),
+        documents=chunks,
+        embedding=OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY")),
         persist_directory=CHROMA_PATH
     )
 
-    print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
+    # Add this to ensure it persists properly
+    db.persist()
+
+    print(f"✅ Saved {len(chunks)} chunks to {CHROMA_PATH}")
 
 
 if __name__ == "__main__":
