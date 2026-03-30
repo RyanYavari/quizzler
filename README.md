@@ -18,6 +18,46 @@ Quizzler is an AI-powered chatbot designed to help students study by creating pe
 - **Reranking:** Cohere Rerank API
 
 ## RAG Workflow
+
+## The 5-Step Pipeline
+
+```
+User Query
+    │
+    ▼
+┌─────────────────────────┐
+│ 1. Query Expansion       │  gpt-4o-mini rewrites query + extracts state
+│    expandQuery()         │  app/api/chat/route.ts:77-105
+└────────────┬────────────┘
+             │  { expandedQuery, state }
+             ▼
+┌─────────────────────────┐
+│ 2. Embedding            │  text-embedding-3-small → 1536-dim vector
+│    embedQuery()         │  app/api/chat/route.ts:115-121
+└────────────┬────────────┘
+             │  number[1536]
+             ▼
+┌─────────────────────────┐
+│ 3. Hybrid Search        │  Supabase RPC: pgvector cosine + BM25 + RRF
+│    hybridSearch()       │  app/api/chat/route.ts:135-153
+└────────────┬────────────┘
+             │  Top 20 chunks (combined_score DESC)
+             ▼
+┌─────────────────────────┐
+│ 4. Reranking            │  Cohere rerank-english-v3.0 (cross-encoder)
+│    rerankChunks()       │  app/api/chat/route.ts:166-213
+└────────────┬────────────┘
+             │  Top 5 chunks (relevanceScore 0–1)
+             ▼
+┌─────────────────────────┐
+│ 5. Generation           │  Strict "Compliance Officer" system prompt
+│    streamText()         │  app/api/chat/route.ts:351-372
+└─────────────────────────┘
+             │
+             ▼
+   Streaming Response + Citation Metadata (data-sources part)
+```
+
 Quizzler uses a 5-step deterministic RAG pipeline to answer questions from your study materials:
 
 1. **Query Expansion** — Rewrites your question into richer search terminology using `gpt-4o-mini`
