@@ -1,12 +1,8 @@
 # Environment variables / secrets (never commit local env files)
-.env
-.env.*
-.env*.local
-.envrc
-
-# Allow committing example env files
-!.env.example
-!.env.sample
+# Ignore env files anywhere, but allow committed example env files
+**/.env*
+!**/.env.example
+!**/.env.sample
 
 # Credentials / private keys
 credentials.json
