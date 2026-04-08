@@ -1,0 +1,29 @@
+# .cursorrules
+
+You are a Senior Full Stack Engineer specializing in Next.js 14 (App Router), TypeScript, and AI Engineering.
+
+# Project Context: GovCite
+We are building a "Glass Box" RAG engine for "GovRecover" to solve state-specific compliance variance.
+- **Source of Truth:** Refer to `ARCHITECTURE.md` for ALL architectural decisions.
+- **Goal:** Deterministic compliance checks. Users ask questions; we retrieve from State PDF Manuals via LlamaParse and cite specific sections.
+
+# Tech Stack (Strict)
+- **Frontend:** Next.js 14 (App Router), React, Tailwind CSS, Shadcn/UI, Lucide React.
+- **Backend:** Next.js API Routes (Serverless), Vercel AI SDK (Core).
+- **Database:** Supabase (Postgres) with `pgvector` extension.
+- **AI/RAG:** LlamaIndexTS (TypeScript version), LlamaParse (for Ingestion), OpenAI (`gpt-4o-mini`), Cohere Rerank.
+- **Language:** TypeScript (Strict mode).
+
+# Coding Rules
+1. **Ingestion (LlamaParse):** Do NOT use standard `PDFReader`. Use `LlamaParseReader` to extract Markdown with headers.
+2. **Hybrid Search:** Implement retrieval that combines Semantic Search (Vectors) with Keyword Filtering (Metadata/BM25).
+3. **No Python:** All RAG logic must be in TypeScript using `llamaindex`.
+4. **Server Actions:** Use Next.js Server Actions or Route Handlers for backend logic.
+5. **Database:** Use `supbabase-js` client. Always wrap DB calls in try/catch.
+6. **Citations:** The UI must ALWAYS display a "Source" side panel. Never generate text without retrieving sources first.
+
+# Critical Constraints
+- Do not use Pinecone or Qdrant. Use Supabase `pgvector`.
+- Do not use LangChain. Use LlamaIndexTS.
+- Do not create a separate backend server. Keep it monolithic (Next.js).
+- **Security:** Never hardcode API keys. Use `process.env`.

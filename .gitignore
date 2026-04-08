@@ -1,3 +1,52 @@
+# Environment variables / secrets (never commit local env files)
 .env
+.env.*
+.env*.local
+.envrc
+
+# Allow committing example env files
+!.env.example
+!.env.sample
+
+# Credentials / private keys
+credentials.json
+serviceAccountKey.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+
+# Cloud provider credentials directories (common)
+.aws/
+.gcp/
+.azure/
+
+# Node / web build output
 node_modules/
-node/
+.next/
+.turbo/
+.vercel/
+dist/
+build/
+out/
+coverage/
+
+# Logs / caches
+*.log
+.cache/
+.DS_Store
+
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Large generated/vector DB artifacts (LangChain RAG)
+backend/Langchain-RAG/chroma/
+backend/Langchain-RAG/__pycache__/
+backend/Langchain-RAG/data/*.pdf
+backend/Langchain-RAG/data/*.bin
+
