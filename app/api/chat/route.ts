@@ -1,8 +1,8 @@
 /**
- * GovCite RAG Chat API Route
+ * Quizzler RAG Chat API Route
  *
- * Implements the "Read Path" from ARCHITECTURE.md:
- * 1. Query Expansion  - Rewrite user query with legal terminology (GPT-4o-mini)
+ * Implements the 5-stage RAG pipeline:
+ * 1. Query Expansion  - Rewrite user query with academic terminology (GPT-4o-mini)
  * 2. Hybrid Search    - Vector + Keyword search via Supabase RPC (top 20)
  * 3. Re-Ranking       - Cohere Rerank for precision (top 5)
  * 4. Generation       - GPT-4o-mini streaming response with strict citations
@@ -26,7 +26,6 @@ import { supabase } from '@/lib/supabase';
 
 interface QueryExpansionResult {
   expandedQuery: string;
-  state: string | null;
 }
 
 interface HybridSearchResult {
@@ -68,26 +67,21 @@ const MIN_CHUNK_LENGTH = 50; // Filter out noise chunks (headers, addenda labels
 // ============================================================================
 
 /**
- * Rewrites the user query with precise legal terminology and extracts
- * the target US state (if mentioned) for metadata filtering.
+ * Rewrites the user query with precise academic terminology to improve
+ * retrieval recall against course materials.
  *
- * Example: "deceased parent claim in Florida"
- *       -> { expandedQuery: "heirship affidavit probate intestate succession Florida", state: "FL" }
+ * Example: "what causes inflation"
+ *       -> { expandedQuery: "inflation causes monetary policy demand-pull cost-push aggregate demand" }
  */
 async function expandQuery(userMessage: string): Promise<QueryExpansionResult> {
   const { text } = await generateText({
     model: openai('gpt-4o-mini'),
-    system: `You are a legal query expansion assistant for state unclaimed property law.
+    system: `You are an academic query expansion assistant for student study materials.
 
-Your job is to:
-1. Rewrite the user's query using precise legal terminology relevant to unclaimed property, escheatment, and state compliance. Expand colloquial terms into formal legal language (e.g., "deceased parent" → "heirship affidavit probate intestate succession", "old bank account" → "dormant account escheatment holder remittance").
-2. Identify the US state mentioned in the query and return its 2-letter code (e.g., "FL", "CA"). If no state is mentioned, return null.
+Your job is to rewrite the user's question using precise academic terminology and related concepts to improve search recall. Expand colloquial terms into formal academic language (e.g., "what causes inflation" → "inflation causes monetary policy demand-pull cost-push aggregate demand supply shock").
 
 Respond ONLY with valid JSON in this exact format (no markdown, no explanation):
-{ "expandedQuery": "the rewritten query with legal terms", "state": "XX" }
-
-If no state is mentioned, use:
-{ "expandedQuery": "the rewritten query with legal terms", "state": null }`,
+{ "expandedQuery": "the rewritten query with academic terms" }`,
     prompt: userMessage,
   });
 
@@ -95,12 +89,11 @@ If no state is mentioned, use:
     const parsed = JSON.parse(text);
     return {
       expandedQuery: parsed.expandedQuery || userMessage,
-      state: parsed.state || null,
     };
   } catch {
     // Fallback: use original query if LLM response is not valid JSON
     console.error('[Query Expansion] Failed to parse LLM response:', text);
-    return { expandedQuery: userMessage, state: null };
+    return { expandedQuery: userMessage };
   }
 }
 
@@ -130,18 +123,17 @@ async function embedQuery(query: string): Promise<number[]> {
  * - Keyword search (BM25-style full-text via tsvector)
  * - Reciprocal Rank Fusion (RRF) to merge results
  *
- * Returns top `match_count` chunks, optionally filtered by state.
+ * Returns top `match_count` chunks.
  */
 async function hybridSearch(
   queryEmbedding: number[],
-  queryText: string,
-  state: string | null
+  queryText: string
 ): Promise<HybridSearchResult[]> {
   const { data, error } = await supabase.rpc('hybrid_search', {
     query_embedding: JSON.stringify(queryEmbedding),
     query_text: queryText,
     match_count: HYBRID_SEARCH_COUNT,
-    filter_state: state,
+    filter_state: null,
   });
 
   if (error) {
@@ -217,15 +209,15 @@ async function rerankChunks(
 // ============================================================================
 
 /**
- * Constructs the system prompt for the "Strict Compliance Officer" persona.
+ * Constructs the system prompt for the "Study Assistant" persona.
  * Injects the top reranked chunks as numbered source documents.
  */
 function buildSystemPrompt(chunks: RankedSearchResult[]): string {
   if (chunks.length === 0) {
-    return `You are a Strict Compliance Officer for state unclaimed property law at GovRecover.
+    return `You are a friendly and knowledgeable Study Assistant for Quizzler.
 
-No relevant source documents were found for the user's query.
-Respond with: "I cannot find this information in the provided state manuals. Please refine your question or specify the state."`;
+No relevant source documents were found for the student's question.
+Respond with: "I couldn't find information about that in your study materials. Try rephrasing your question or uploading additional course materials."`;
   }
 
   const contextBlocks = chunks
@@ -233,26 +225,24 @@ Respond with: "I cannot find this information in the provided state manuals. Ple
       const source = chunk.metadata?.source || 'Unknown';
       const page = chunk.metadata?.page || 'N/A';
       const section = chunk.metadata?.section || '';
-      const state = chunk.metadata?.state || '';
 
       return `[Document ${i + 1}]
 Source: ${source}
-State: ${state}
 Page: ${page}${section ? `\nSection: ${section}` : ''}
 
 ${chunk.content}`;
     })
     .join('\n\n---\n\n');
 
-  return `You are a Strict Compliance Officer for state unclaimed property law at GovRecover.
+  return `You are a friendly and knowledgeable Study Assistant for Quizzler.
 
 ## Your Rules:
 1. Answer ONLY using the provided source documents below. Do NOT use outside knowledge.
-2. If the provided documents do not contain sufficient information to answer the question, respond with: "I cannot find this information in the provided state manuals. Please refine your question or specify the state."
+2. If the provided documents do not contain sufficient information to answer the question, respond with: "I couldn't find information about that in your study materials. Try rephrasing your question or uploading additional course materials."
 3. ALWAYS cite your sources using the format: [Source: {filename}, Page {page number}]
 4. When multiple sources support an answer, cite all of them.
-5. Be precise with legal requirements — do not paraphrase statutes loosely.
-6. If the user asks about a state not represented in the documents, clearly state that.
+5. Explain concepts clearly and in a way that helps students learn. Use encouraging, educational language.
+6. When appropriate, highlight key takeaways or suggest related topics the student might want to explore in their materials.
 
 ## Source Documents:
 
@@ -294,43 +284,42 @@ export async function POST(req: Request) {
         .map((p) => p.text)
         .join(' ') || '';
 
-    console.log('[GovCite] Processing query:', userMessage);
+    console.log('[Quizzler] Processing query:', userMessage);
 
     // ---- RAG Pipeline ----
 
     // Step 1: Query Expansion
-    console.log('[GovCite] Step 1: Expanding query...');
-    const { expandedQuery, state } = await expandQuery(userMessage);
-    console.log('[GovCite] Expanded:', expandedQuery, '| State:', state);
+    console.log('[Quizzler] Step 1: Expanding query...');
+    const { expandedQuery } = await expandQuery(userMessage);
+    console.log('[Quizzler] Expanded:', expandedQuery);
 
     // Step 2: Embed the expanded query
-    console.log('[GovCite] Step 2: Generating embedding...');
+    console.log('[Quizzler] Step 2: Generating embedding...');
     const queryEmbedding = await embedQuery(expandedQuery);
 
     // Step 3: Hybrid Search (Vector + Keyword via Supabase RPC)
-    console.log('[GovCite] Step 3: Hybrid search...');
+    console.log('[Quizzler] Step 3: Hybrid search...');
     const searchResults = await hybridSearch(
       queryEmbedding,
-      expandedQuery,
-      state
+      expandedQuery
     );
-    console.log(`[GovCite] Found ${searchResults.length} hybrid results`);
+    console.log(`[Quizzler] Found ${searchResults.length} hybrid results`);
 
     // Filter out noise chunks (tiny headers, addenda labels, etc.)
     const substantiveResults = searchResults.filter(
       (r) => r.content && r.content.length >= MIN_CHUNK_LENGTH
     );
     console.log(
-      `[GovCite] After filtering: ${substantiveResults.length} substantive chunks (removed ${searchResults.length - substantiveResults.length} noise chunks)`
+      `[Quizzler] After filtering: ${substantiveResults.length} substantive chunks (removed ${searchResults.length - substantiveResults.length} noise chunks)`
     );
 
     // Step 4: Rerank with Cohere
-    console.log('[GovCite] Step 4: Reranking with Cohere...');
+    console.log('[Quizzler] Step 4: Reranking with Cohere...');
     const topChunks = await rerankChunks(userMessage, substantiveResults);
-    console.log(`[GovCite] Selected top ${topChunks.length} chunks`);
+    console.log(`[Quizzler] Selected top ${topChunks.length} chunks`);
 
     // Step 5: Stream response with GPT-4o-mini
-    console.log('[GovCite] Step 5: Generating streamed response...');
+    console.log('[Quizzler] Step 5: Generating streamed response...');
     const systemPrompt = buildSystemPrompt(topChunks);
 
     // Convert UIMessages to ModelMessages for streamText
@@ -341,7 +330,6 @@ export async function POST(req: Request) {
       content: chunk.content,
       source: chunk.metadata?.source || 'Unknown',
       page: chunk.metadata?.page || null,
-      state: chunk.metadata?.state || '',
       section: chunk.metadata?.section || '',
       rank: i + 1,
       relevanceScore: chunk.relevanceScore ?? 0,
@@ -366,14 +354,14 @@ export async function POST(req: Request) {
         writer.merge(result.toUIMessageStream());
       },
       onError: (error) => {
-        console.error('[GovCite] Stream error:', error);
+        console.error('[Quizzler] Stream error:', error);
         return 'An error occurred while generating the response.';
       },
     });
 
     return createUIMessageStreamResponse({ stream });
   } catch (error) {
-    console.error('[GovCite] Pipeline error:', error);
+    console.error('[Quizzler] Pipeline error:', error);
     return new Response(
       JSON.stringify({
         error: 'An error occurred processing your request',

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Shield } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 import ChatInterface from '@/components/chat-interface';
 import CitationPanel from '@/components/citation-panel';
 import type { Citation } from '@/lib/types';
@@ -31,17 +31,14 @@ export default function Home() {
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary text-primary-foreground">
-              <Shield className="h-5 w-5" />
+              <GraduationCap className="h-5 w-5" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-primary leading-tight">
-                GovRecover{' '}
-                <span className="font-normal text-foreground">
-                  Compliance Engine
-                </span>
+                Quizzler
               </h1>
               <p className="text-xs text-muted-foreground">
-                Deterministic RAG for State Unclaimed Property Law
+                AI-powered study assistant with cited answers from your course materials
               </p>
             </div>
           </div>
