@@ -14,9 +14,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "GovCite | GovRecover Compliance Engine",
+  title: "Quizzler | AI Study Assistant",
   description:
-    "Deterministic RAG engine for multi-jurisdictional state unclaimed property compliance. Glass-box citations from official state manuals.",
+    "AI-powered study assistant with cited answers from your course materials. Upload notes, textbooks, and study guides — then ask anything.",
 };
 
 export default function RootLayout({
