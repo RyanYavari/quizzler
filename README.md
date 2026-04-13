@@ -74,3 +74,47 @@ User Question
    ```
 
 4. Open [http://localhost:3000](http://localhost:3000) and start asking questions about your study materials.
+
+## Observability
+
+Every RAG pipeline run is traced end-to-end via [LangSmith](https://smith.langchain.com/). Each request produces a parent trace named `rag_pipeline` containing child spans for every stage:
+
+| Span | What it captures |
+|---|---|
+| `expand_query` | Input question, expanded query output |
+| `embed_query` | Query text in, embedding vector out |
+| `hybrid_search` | Query embedding + text in, matched chunks out |
+| `cohere_rerank` | Cohere relevance scores per chunk |
+| `gpt-4o-mini` (via `wrapAISDKModel`) | Prompt, completion, token usage |
+
+### Setup
+
+Add these to your `.env.local`:
+
+```
+LANGSMITH_TRACING_V2=true
+LANGSMITH_API_KEY=your_langsmith_api_key
+LANGSMITH_PROJECT=quizzler
+```
+
+Traces appear automatically in your [LangSmith dashboard](https://smith.langchain.com/) under the `quizzler` project.
+
+## Evaluation
+
+A built-in eval script tests the RAG pipeline against a golden dataset of 10 study-focused questions.
+
+### What it checks
+
+- **Citation present** — Does the response include a `[Source: ...]` citation?
+- **Hallucination detection** — Does the model refuse to answer off-topic questions instead of hallucinating?
+- **Latency** — End-to-end response time per question.
+
+### Running evals
+
+Start the dev server, then run:
+
+```bash
+npm run eval
+```
+
+The script outputs a summary table and an overall pass/fail score. It exits with code 1 if any test fails, making it suitable for CI.
