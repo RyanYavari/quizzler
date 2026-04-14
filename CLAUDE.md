@@ -14,8 +14,8 @@ Quiz-first study tool. User uploads content → AI generates MCQ quiz → user t
 - In-memory server-side Map — ephemeral session store, 2hr TTL, no database
 - LlamaParse cloud API — PDF parsing
 - LangSmith — tracing (`langsmith/traceable`, `langsmith/wrappers/vercel`)
-- Tailwind CSS
-- **No new dependencies** — all functionality uses existing packages
+- Tailwind CSS + `@tailwindcss/typography` — styling and markdown prose
+- `react-markdown` + `remark-gfm` — markdown rendering in tutor chat
 
 ---
 
@@ -37,7 +37,7 @@ Then interpolates placeholders before passing to the LLM.
 ## App Flow
 | Stage | Screen | What Happens |
 |---|---|---|
-| 1 | Upload | PDF / .txt / paste text (≤10k chars) + pick question count (5/10/15/20, default 10) |
+| 1 | Upload | PDF / .txt / paste text (≤10k chars) + dropdown to select question count (5/10/15/20, default 10) |
 | 2 | Loading | SSE spinner: `parsing → chunking → processing → complete`. Parallel: embed chunks + generate quiz |
 | 3 | Quiz | All N questions at once, 4 radio choices each. Tutor locked. Client-side scoring on submit. |
 | 4 | Review | Score reveal + 70/30 split. Tutor sends one proactive message, then reactive RAG chat. |
@@ -82,7 +82,7 @@ app/
     tutor/route.ts            # 5-stage RAG tutor endpoint
 
 components/
-  upload-screen.tsx           # Dropzone + textarea + question count picker
+  upload-screen.tsx           # Dropzone + textarea + question count dropdown
   loading-screen.tsx          # SSE progress spinner
   quiz-screen.tsx             # Full-width quiz
   quiz-question.tsx           # Single MCQ card
@@ -90,7 +90,7 @@ components/
   score-reveal.tsx            # Animated score banner
   quiz-review.tsx             # Left: scrollable answered quiz
   review-question.tsx         # Correct/incorrect highlighted card
-  tutor-chat.tsx              # Right: useChat + streaming + citations
+  tutor-chat.tsx              # Right: useChat + streaming + citations + markdown rendering
   citation-block.tsx          # Inline glass box citation
 
 lib/
@@ -190,7 +190,7 @@ NEXT_PUBLIC_SUPABASE_URL= / NEXT_PUBLIC_SUPABASE_ANON_KEY=  # unused
 - No auth, no DB writes — ephemeral, privacy-first
 - Server-side session store (Map + 2hr TTL), not client state
 - Pasted text capped at 10,000 chars on client
-- Question range: 5–20, default 10
+- Question range: 5/10/15/20, default 10
 - Multiple choice only, 4 options, plausible distractors (content-related, not obviously wrong)
 - Score shown at end only, client-side — no server round-trip
 - Tutor sees full quiz context (questions, correct answers, user answers, score)

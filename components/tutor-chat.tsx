@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { Send, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { Citation } from '@/lib/types';
 import CitationBlock from './citation-block';
 
@@ -100,10 +102,24 @@ export default function TutorChat({
               >
                 {message.parts?.map((part, i) => {
                   if (part.type === 'text') {
+                    if (message.role === 'user') {
+                      // User messages: simple text, no markdown
+                      return (
+                        <span key={i} className="whitespace-pre-wrap">
+                          {part.text}
+                        </span>
+                      );
+                    }
+                    // Assistant messages: render markdown
                     return (
-                      <span key={i} className="whitespace-pre-wrap">
-                        {part.text}
-                      </span>
+                      <div
+                        key={i}
+                        className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-headings:mt-2 prose-headings:mb-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
+                      >
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {part.text}
+                        </ReactMarkdown>
+                      </div>
                     );
                   }
                   return null;

@@ -168,24 +168,24 @@ export default function UploadScreen({ onUpload }: UploadScreenProps) {
 
         {/* Question count */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">
+          <label
+            htmlFor="question-count"
+            className="text-sm font-medium text-foreground"
+          >
             Number of questions
           </label>
-          <div className="flex gap-2">
+          <select
+            id="question-count"
+            value={questionCount}
+            onChange={(e) => setQuestionCount(Number(e.target.value))}
+            className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+          >
             {QUESTION_COUNTS.map((count) => (
-              <button
-                key={count}
-                onClick={() => setQuestionCount(count)}
-                className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
-                  questionCount === count
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'bg-muted text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {count}
-              </button>
+              <option key={count} value={count}>
+                {count} questions
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Submit button */}
