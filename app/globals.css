@@ -130,3 +130,17 @@
 .wrong-answer {
   position: relative;
 }
+
+/* Resizable divider pulse animation */
+@keyframes divider-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.5);
+  }
+}
+
+.animate-divider-pulse {
+  animation: divider-pulse 2s ease-in-out infinite;
+}
