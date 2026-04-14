@@ -7,13 +7,33 @@ import { Send, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Citation } from '@/lib/types';
-import CitationBlock from './citation-block';
 
 interface TutorChatProps {
   sessionId: string;
   userAnswers: Record<string, number>;
   score: number;
   total: number;
+}
+
+interface ParsedMessage {
+  text: string;
+  citations: Citation[];
+}
+
+// Parse message content to extract text and citations
+function parseMessageContent(content: string): ParsedMessage {
+  const citationMatch = content.match(/<citations>([\s\S]*?)<\/citations>/);
+  if (!citationMatch) {
+    return { text: content, citations: [] };
+  }
+
+  const text = content.replace(/<citations>[\s\S]*?<\/citations>/, '').trim();
+  try {
+    const citations = JSON.parse(citationMatch[1]) as Citation[];
+    return { text, citations };
+  } catch {
+    return { text: content, citations: [] };
+  }
 }
 
 export default function TutorChat({
@@ -25,7 +45,9 @@ export default function TutorChat({
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasSentInitial = useRef(false);
   const [inputValue, setInputValue] = useState('');
-  const [citations, setCitations] = useState<Citation[]>([]);
+  const [openCitationId, setOpenCitationId] = useState<string | null>(null);
+  const [messageCitations, setMessageCitations] = useState<Map<number, Citation[]>>(new Map());
+  const pendingCitationsRef = useRef<Citation[] | null>(null);
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -33,12 +55,40 @@ export default function TutorChat({
       body: { sessionId, userAnswers, score, total },
     }),
     onData: (data) => {
+      console.log('[TutorChat] onData fired:', data);
       const d = data as unknown as { type?: string; data?: Citation[] };
+      console.log('[TutorChat] Parsed data:', { type: d.type, hasData: Array.isArray(d.data), length: d.data?.length });
       if (d.type === 'data-sources' && Array.isArray(d.data)) {
-        setCitations(d.data);
+        // Store citations temporarily until the message appears
+        console.log('[TutorChat] Received citations:', d.data.length);
+        pendingCitationsRef.current = d.data;
+      } else {
+        console.log('[TutorChat] Data event not matching expected format');
       }
     },
   });
+
+  // Associate pending citations with the latest assistant message
+  useEffect(() => {
+    if (pendingCitationsRef.current && messages.length > 0) {
+      const lastIndex = messages.length - 1;
+      const lastMessage = messages[lastIndex];
+
+      if (lastMessage && lastMessage.role === 'assistant') {
+        // Capture citations before clearing the ref
+        const citations = pendingCitationsRef.current;
+        pendingCitationsRef.current = null;
+
+        console.log('[TutorChat] Associating citations with message index:', lastIndex, 'count:', citations.length);
+        setMessageCitations(prev => {
+          const next = new Map(prev);
+          next.set(lastIndex, citations);
+          console.log('[TutorChat] Map after update - size:', next.size, 'keys:', Array.from(next.keys()), 'value at', lastIndex, ':', next.get(lastIndex)?.length);
+          return next;
+        });
+      }
+    }
+  }, [messages]);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -86,47 +136,111 @@ export default function TutorChat({
       >
         {messages
           .filter((m) => m.role !== 'system')
-          .map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
+          .map((message, index) => {
+            // Extract full text content from parts
+            const fullContent = message.parts
+              ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+              .map((p) => p.text)
+              .join('') || '';
+
+            // Get citations from Map using original index (before filter)
+            const originalIndex = messages.findIndex(m => m.id === message.id);
+            const citations = messageCitations.get(originalIndex) || [];
+            if (message.role === 'assistant') {
+              console.log('[TutorChat] Rendering assistant message:', message.id, 'index:', originalIndex, 'citations:', citations.length, 'mapSize:', messageCitations.size, 'mapHasIndex:', messageCitations.has(originalIndex));
+            }
+
+            return (
               <div
-                className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-foreground'
+                key={message.id}
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                {message.parts?.map((part, i) => {
-                  if (part.type === 'text') {
-                    if (message.role === 'user') {
+                <div className="max-w-[90%] space-y-2">
+                  <div
+                    className={`rounded-xl px-3 py-2 text-sm ${
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-foreground'
+                    }`}
+                  >
+                    {message.role === 'user' ? (
                       // User messages: simple text, no markdown
-                      return (
-                        <span key={i} className="whitespace-pre-wrap">
-                          {part.text}
-                        </span>
-                      );
-                    }
-                    // Assistant messages: render markdown
-                    return (
-                      <div
-                        key={i}
-                        className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-headings:mt-2 prose-headings:mb-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
-                      >
+                      <span className="whitespace-pre-wrap">{fullContent}</span>
+                    ) : (
+                      // Assistant messages: render markdown
+                      <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-headings:mt-2 prose-headings:mb-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {part.text}
+                          {fullContent}
                         </ReactMarkdown>
                       </div>
-                    );
-                  }
-                  return null;
-                })}
+                    )}
+                  </div>
+
+                  {/* Citation pills for assistant messages */}
+                  {message.role === 'assistant' && citations.length > 0 && (
+                    <div className="space-y-2">
+                      {/* Numbered pills */}
+                      <div className="flex flex-wrap gap-1.5 px-1">
+                        {citations.map((citation, idx) => {
+                          const citationId = `${originalIndex}-${idx}`;
+                          const isOpen = openCitationId === citationId;
+
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('[Citation] Clicked pill', idx + 1, 'Current:', openCitationId, 'Setting:', isOpen ? null : citationId);
+                                setOpenCitationId(isOpen ? null : citationId);
+                              }}
+                              className="inline-flex items-center justify-center min-w-[28px] h-6 px-2 text-xs font-medium rounded-md bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/30 hover:border-indigo-400/50 transition-all cursor-pointer"
+                            >
+                              [{idx + 1}]
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Expanded citation card */}
+                      {citations.map((citation, idx) => {
+                        const citationId = `${originalIndex}-${idx}`;
+                        const isOpen = openCitationId === citationId;
+
+                        if (!isOpen) return null;
+
+                        return (
+                          <div
+                            key={idx}
+                            className="rounded-lg bg-card border-l-4 border-indigo-500 p-3 space-y-2 animate-in slide-in-from-top-2 duration-200"
+                          >
+                            {/* Header */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="font-semibold text-sm text-foreground">
+                                Source: {citation.source}
+                                {citation.page && `, Page ${citation.page}`}
+                              </div>
+                              <div className="shrink-0 px-2 py-0.5 rounded-md bg-indigo-600/20 text-indigo-300 text-xs font-medium border border-indigo-500/30">
+                                Score: {(citation.relevanceScore * 100).toFixed(0)}%
+                              </div>
+                            </div>
+
+                            {/* Content */}
+                            <blockquote className="pl-3 border-l-2 border-indigo-500/40 text-sm text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap">
+                              {citation.content}
+                            </blockquote>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex justify-start">
@@ -135,16 +249,6 @@ export default function TutorChat({
             </div>
           </div>
         )}
-
-        {/* Show citations after assistant messages */}
-        {citations.length > 0 &&
-          messages[messages.length - 1]?.role === 'assistant' && (
-            <div className="space-y-1">
-              {citations.map((c, i) => (
-                <CitationBlock key={i} citation={c} />
-              ))}
-            </div>
-          )}
       </div>
 
       {/* Input */}
