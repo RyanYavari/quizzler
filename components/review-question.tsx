@@ -17,14 +17,14 @@ export default function ReviewQuestion({
 
   return (
     <div
-      className={`rounded-xl border-2 p-5 space-y-3 ${
+      className={`rounded-xl border-2 p-5 space-y-3 shadow-lg ${
         isCorrect
-          ? 'border-green-200 bg-green-50/50'
-          : 'border-red-200 bg-red-50/50'
+          ? 'border-emerald-500/50 bg-emerald-950/30'
+          : 'border-rose-500/50 bg-rose-950/30'
       }`}
     >
       <div className="flex items-start gap-2">
-        <span className={`text-lg ${isCorrect ? 'text-green-600' : 'text-red-500'}`}>
+        <span className={`text-lg ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
           {isCorrect ? '✓' : '✗'}
         </span>
         <h3 className="font-medium text-foreground">
@@ -40,9 +40,9 @@ export default function ReviewQuestion({
           let classes = 'rounded-lg border px-3 py-2 text-sm';
 
           if (isCorrectOption) {
-            classes += ' correct-answer border-green-300 bg-green-100 text-green-800 font-medium';
+            classes += ' correct-answer border-emerald-500/50 bg-emerald-500/20 text-emerald-200 font-medium';
           } else if (isUserChoice && !isCorrect) {
-            classes += ' wrong-answer border-red-300 bg-red-100 text-red-700 line-through';
+            classes += ' wrong-answer border-rose-500/50 bg-rose-500/20 text-rose-200 line-through';
           } else {
             classes += ' border-transparent text-muted-foreground';
           }
@@ -59,7 +59,7 @@ export default function ReviewQuestion({
       </div>
 
       {/* Explanation */}
-      <div className="ml-7 mt-2 rounded-lg bg-accent/50 px-3 py-2 text-sm text-muted-foreground">
+      <div className="ml-7 mt-2 rounded-lg bg-accent px-3 py-2 text-sm text-muted-foreground">
         <span className="font-medium text-foreground">Explanation: </span>
         {question.explanation}
       </div>

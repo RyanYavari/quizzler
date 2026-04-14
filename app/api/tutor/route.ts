@@ -206,10 +206,14 @@ export async function POST(req: Request) {
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
+        console.log('[Tutor] Starting stream execution...');
+
+        // Write citations as data event first
         writer.write({
           type: 'data-sources' as const,
           data: sourcesData,
         } as never);
+        console.log('[Tutor] Citations data written');
 
         const result = streamText({
           model: tracedModel,
@@ -217,7 +221,11 @@ export async function POST(req: Request) {
           messages: modelMessages,
         });
 
+        console.log('[Tutor] Merging text stream...');
+        // Use the original merge approach for proper text streaming
         writer.merge(result.toUIMessageStream());
+
+        console.log('[Tutor] Stream merged successfully');
       },
       onError: (error) => {
         console.error('[Tutor] Stream error:', error);

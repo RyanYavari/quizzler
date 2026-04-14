@@ -60,7 +60,7 @@ export default function QuizScreen({
         <button
           onClick={onSubmit}
           disabled={!allAnswered}
-          className="rounded-xl bg-primary text-primary-foreground px-8 py-3 font-medium text-sm shadow-lg transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+          className="rounded-xl bg-primary text-primary-foreground px-8 py-3 font-medium text-sm shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
         >
           {allAnswered ? 'Submit Quiz' : `Answer all questions to submit`}
         </button>
