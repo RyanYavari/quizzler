@@ -33,7 +33,7 @@ export default function QuizReview({
       <div className="flex justify-center pb-4">
         <button
           onClick={onStartOver}
-          className="rounded-xl border border-border bg-white px-6 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          className="rounded-xl border border-border bg-card px-6 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
         >
           Start Over
         </button>

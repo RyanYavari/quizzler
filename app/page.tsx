@@ -131,10 +131,10 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-white px-6 py-4 shrink-0">
+      <header className="border-b border-border bg-card px-6 py-4 shrink-0 shadow-lg">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary text-primary-foreground">
+            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary text-primary-foreground shadow-md shadow-primary/30">
               <GraduationCap className="h-5 w-5" />
             </div>
             <div>

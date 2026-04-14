@@ -136,7 +136,7 @@ Tutor: `useChat({ api: '/api/tutor', body: { sessionId } })`
 ---
 
 ## UI Design
-**Fun, not corporate.** Flashcard app energy. Indigo/violet accent, rounded cards, smooth transitions, celebratory score reveal.
+**Modern dark theme.** Sleek and contemporary with a dark slate background (hsl(224 71% 4%)), cards in slightly lighter slate (hsl(224 71% 8%)), and a vibrant cyan primary accent (hsl(200 98% 39%)). Rounded cards with subtle shadows, smooth transitions, and glowing effects on interactive elements. Success states use emerald green, errors use rose red.
 
 **Review screen (70/30)**:
 ```

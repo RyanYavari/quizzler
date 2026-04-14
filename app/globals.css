@@ -4,31 +4,48 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 214 95% 93%;
-    --accent-foreground: 221 83% 53%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-    --chart-1: 221 83% 53%;
-    --chart-2: 199 89% 48%;
-    --chart-3: 215 20% 65%;
+    /* Modern dark theme */
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --card: 224 71% 8%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 224 71% 8%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 200 98% 39%;
+    --primary-foreground: 220 13% 95%;
+
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 16% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 200 98% 60%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 200 98% 39%;
+
+    --chart-1: 200 98% 39%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 291 64% 42%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
     --radius: 0.5rem;
+
+    /* Success/error accent colors for dark theme */
+    --success: 142 76% 36%;
+    --success-foreground: 138 76% 97%;
+    --error: 0 72% 51%;
+    --error-foreground: 0 86% 97%;
   }
 }
 
@@ -38,6 +55,10 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 

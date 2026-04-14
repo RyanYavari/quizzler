@@ -82,7 +82,7 @@ export default function UploadScreen({ onUpload }: UploadScreenProps) {
             onClick={() => setMode('file')}
             className={`flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               mode === 'file'
-                ? 'bg-white text-foreground shadow-sm'
+                ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -93,7 +93,7 @@ export default function UploadScreen({ onUpload }: UploadScreenProps) {
             onClick={() => setMode('paste')}
             className={`flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               mode === 'paste'
-                ? 'bg-white text-foreground shadow-sm'
+                ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -114,7 +114,7 @@ export default function UploadScreen({ onUpload }: UploadScreenProps) {
               dragActive
                 ? 'border-primary bg-accent/50'
                 : selectedFile
-                  ? 'border-green-300 bg-green-50'
+                  ? 'border-emerald-500/50 bg-emerald-500/10'
                   : 'border-border hover:border-primary/50 hover:bg-accent/30'
             }`}
           >
@@ -127,8 +127,8 @@ export default function UploadScreen({ onUpload }: UploadScreenProps) {
             />
             {selectedFile ? (
               <div className="flex flex-col items-center gap-2">
-                <FileText className="h-10 w-10 text-green-600" />
-                <p className="font-medium text-green-700">
+                <FileText className="h-10 w-10 text-emerald-400" />
+                <p className="font-medium text-emerald-300">
                   {selectedFile.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -158,7 +158,7 @@ export default function UploadScreen({ onUpload }: UploadScreenProps) {
                 setPastedText(e.target.value.slice(0, MAX_PASTE_LENGTH))
               }
               placeholder="Paste your study notes, lecture text, or any content you want to be quizzed on..."
-              className="w-full h-48 rounded-xl border border-border bg-white px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              className="w-full h-48 rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
             />
             <p className="text-xs text-muted-foreground text-right">
               {pastedText.length.toLocaleString()} / {MAX_PASTE_LENGTH.toLocaleString()} characters
@@ -192,7 +192,7 @@ export default function UploadScreen({ onUpload }: UploadScreenProps) {
         <button
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className="w-full rounded-xl bg-primary text-primary-foreground py-3 font-medium text-sm transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-primary text-primary-foreground py-3 font-medium text-sm transition-all hover:bg-primary/90 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
         >
           Generate Quiz
         </button>

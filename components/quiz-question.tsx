@@ -16,7 +16,7 @@ export default function QuizQuestionCard({
   onSelect,
 }: QuizQuestionProps) {
   return (
-    <div className="rounded-xl border border-border bg-white p-6 space-y-4">
+    <div className="rounded-xl border border-border bg-card p-6 space-y-4 shadow-lg shadow-black/10">
       <h3 className="font-medium text-foreground">
         <span className="text-primary font-bold mr-2">Q{index + 1}.</span>
         {question.question}
@@ -29,8 +29,8 @@ export default function QuizQuestionCard({
             onClick={() => onSelect(question.id, i)}
             className={`w-full text-left rounded-lg border px-4 py-3 text-sm transition-all ${
               selectedOption === i
-                ? 'border-primary bg-accent text-primary font-medium ring-2 ring-primary/20'
-                : 'border-border hover:border-primary/40 hover:bg-accent/30'
+                ? 'border-primary bg-accent text-accent-foreground font-medium ring-2 ring-primary/50 shadow-md shadow-primary/20'
+                : 'border-border hover:border-primary/40 hover:bg-accent/30 text-foreground'
             }`}
           >
             <span className="font-medium mr-2 text-muted-foreground">

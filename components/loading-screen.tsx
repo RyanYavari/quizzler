@@ -44,9 +44,9 @@ export default function LoadingScreen({ stage, message }: LoadingScreenProps) {
                 <div
                   className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                     isComplete
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
                       : isActive
-                        ? 'bg-primary text-primary-foreground loading-pulse'
+                        ? 'bg-primary text-primary-foreground loading-pulse shadow-md shadow-primary/30'
                         : 'bg-muted text-muted-foreground'
                   }`}
                 >
@@ -57,7 +57,7 @@ export default function LoadingScreen({ stage, message }: LoadingScreenProps) {
                     isActive
                       ? 'text-primary font-medium'
                       : isComplete
-                        ? 'text-green-600'
+                        ? 'text-emerald-400'
                         : 'text-muted-foreground'
                   }`}
                 >

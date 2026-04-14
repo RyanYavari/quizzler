@@ -70,7 +70,7 @@ export default function TutorChat({
   return (
     <div className="flex flex-col h-full border-l border-border">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border bg-white shrink-0">
+      <div className="px-4 py-3 border-b border-border bg-card shrink-0">
         <h3 className="font-semibold text-sm text-foreground">Study Tutor</h3>
         <p className="text-xs text-muted-foreground">
           Ask about anything from your study material
@@ -134,7 +134,7 @@ export default function TutorChat({
       {/* Input */}
       <form
         onSubmit={handleSubmit}
-        className="px-4 py-3 border-t border-border bg-white shrink-0"
+        className="px-4 py-3 border-t border-border bg-card shrink-0"
       >
         <div className="flex gap-2">
           <input
@@ -142,12 +142,12 @@ export default function TutorChat({
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Ask about your study material..."
             disabled={isLoading}
-            className="flex-1 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-50"
+            className="flex-1 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isLoading || !inputValue.trim()}
-            className="rounded-lg bg-primary text-primary-foreground p-2 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="rounded-lg bg-primary text-primary-foreground p-2 hover:bg-primary/90 shadow-md shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all"
           >
             <Send className="h-4 w-4" />
           </button>
