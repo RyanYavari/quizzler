@@ -13,7 +13,7 @@
     "@ai-sdk/openai": "^3.0.25",
     "@ai-sdk/react": "^3.0.75",
     "@supabase/supabase-js": "^2.49.4",
-    "ai": "^4.3.16",
+    "ai": "^6.0.0",
     "langsmith": "^0.3.28",
     "lucide-react": "^0.563.0",
     "next": "14.2.35",
